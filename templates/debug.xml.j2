@@ -1,0 +1,52 @@
+{{ ansible_all_ipv4_addresses }}
+{% for ip in ansible_all_ipv4_addresses %}
+   {{ ip }}
+{% endfor %}
+{{ groups }}
+---------------------
+{% for group in group_names %}
+   {{ group }}
+{% endfor %}
+---------------------hosts
+{% for group in group_names %}
+	{% for host in groups[group] %}
+	   {{ host }}
+	{% endfor %}
+{% endfor %}
+-------------hosts2
+	{% for host in groups.hadoop %}
+	   
+	{% endfor %}
+----------------
+
+----------------
+{{ inventory_hostname }}
+-----------
+{{ play_hosts }}
+{{ ansible_version }}
+---------------- storms.yml
+storm.zookeeper.servers:
+{% for group in group_names -%}
+    {% for host in groups[group] %}
+     - "{{ host }}"
+    {%- endfor %}
+{%- endfor %}
+
+nimbus.host: "{{ inventory_hostname }}"
+------------------------
+{% for group in group_names %}
+{{groups[group] | join(',')}}
+    {{groups[group] | replace("$",":2181")| join(',')}}
+    {{groups[group] | replace("192",":2181")| join(',')}}
+    {% for host in groups.storm_dev -%}{{"%s:%s"|format(host,'2181')}}{%- endfor %}
+   
+    {{ groups.storm_dev | join(',')}}
+	{% for host in groups[group] %}
+	   {{ host }} {{loop.index}}
+	   {{ host | replace("$",":2181") | join(',')}}
+	   {{ host | replace("\$",":2181") | join(',')}}
+	   {{ host | replace("\\$",":2181") | join(',')}}
+	   {{ host | replace("\n",":2181") | join(',')}}
+	   {{ host | replace("\d",":2181") | join(',')}}
+	{% endfor %}
+{% endfor %}

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# chkconfig: 2345 76 76
+# description: pgq-test-yazuopay daemon.
+start() {
+    echo "starting pgq test_yazuopay consume service ..."
+    su -l postgres -c "python /var/lib/pgsql/mongodb/real_time/storm_pgq.py /var/lib/pgsql/londiste/test/test_yazuopay.ini -d > ~/logs/pgq-test-yazuopay.out &"
+    echo "started pgqd test_yazuopay"
+}
+stop(){
+    echo "stopping pgq test_yazuopay consumer ..."
+    ps -ef | grep pgq | grep test_yazuopay | awk '{print $2}'|xargs kill
+    echo "stopped pgq test_yazuopay consumer"
+}
+restart(){
+   stop
+   start
+}
+
+case "$1" in
+start)
+    start
+    ;;
+status)
+    pid=`ps -ef | grep pgq | grep test_yazuopay | awk '{print $2}'`
+    if [ -n "$pid" ]
+        then
+           echo "pgq test_yazuopay consumer (pid  $pid) is running..."
+        else
+           echo "pgq test_yazuopay consumer is stopped"
+    fi
+    
+    ;;
+stop)
+    stop
+    ;;
+restart)
+    restart
+    ;;
+*)
+    echo $"Usage $0 {start|status|stop|restart}"
+        exit 2
+esac

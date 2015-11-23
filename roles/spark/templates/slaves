@@ -1,0 +1,6 @@
+# A Spark Worker will be started on each of the machines listed below.
+192.168.232.181
+192.168.232.137
+192.168.232.32
+192.168.232.210
+192.168.232.30

@@ -1,0 +1,14 @@
+- name: debug hosts
+  hosts: self-linux
+  # gather_facts: false
+  tasks:
+  - debug: var=ansible_all_ipv4_addresses
+  - name: capture output of id command
+    command: id -un
+    register: login
+  - debug: var=login
+  - name: generate debug.xml files
+    template: src=templates/debug.xml.j2 dest=/data/debug.xml
+    when: inventory_hostname != '192.168.232.11'
+    tags: template
+    sudo: true

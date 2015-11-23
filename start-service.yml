@@ -1,0 +1,25 @@
+---
+- name: storm  environment
+  hosts: storm_dev
+  tasks:
+    - file: path=/data group=dev owner=dev
+
+    - name: start zookeeper service
+      service: name=zookeeper enabled=yes state=started
+      remote_user: dev
+
+    - name: start storm-supervisor service 
+      service: name=storm-supervisor enabled=yes state=started
+
+    - file: path=/data/kafka owner=dev group=dev recurse=yes
+    - file: path=/opt/kafka_2.11-0.8.2.1 owner=dev group=dev recurse=yes
+    - service: name=kafka enabled=yes state=started
+
+    # - debug: var=storm_nimbus
+    # - name: start nimbus service
+    #   service: name=storm-nimbus enabled=yes state=started
+    #   when: storm_nimbus is defined
+
+    # - name: start ui service
+    #   service: name=storm-ui enabled=yes state=started
+    #   when: storm_ui is defined

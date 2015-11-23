@@ -1,0 +1,4 @@
+---
+hostame: storm1
+storm_nimbus: true
+storm_ui: true

@@ -1,0 +1,2 @@
+- template: src=hosts dest=/etc/hosts owner=root group=root
+  tags: hosts

@@ -1,0 +1,15 @@
+systemLog:
+  verbosity: 5
+  traceAllExceptions: true
+  destination: file
+  path: {{config_dir}}/mongodb_config.log
+  logAppend: true 
+sharding:
+  configDB: 192.168.181.21:27018,192.168.181.22:27018,192.168.181.23:27018
+
+processManagement:
+  fork: true
+# {{ansible_default_ipv4.address}}
+net:
+  bindIp: 0.0.0.0
+  port: 27019

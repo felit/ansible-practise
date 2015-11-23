@@ -1,0 +1,20 @@
+---
+- name: storm environment
+  hosts: storm_dev
+  tasks:
+    - service: name=zookeeper enabled=yes state=stopped
+    # - service: name=storm-supervisor enabled=yes state=stopped
+    # - service: name=storm-nimbus enabled=yes state=stopped
+      # remote_user: dev
+      # when: storm_nimbus is defined
+
+    # - shell: pwd
+    #   register: result
+
+    # - debug: var=result
+
+    # - service: name=storm-ui enabled=yes state=stopped
+    #   become: true
+    #   become_user: dev
+    #   when: storm_ui is defined
+    # - service: name=kafka enabled=yes state=stopped

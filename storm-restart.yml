@@ -1,0 +1,34 @@
+---
+- name: restart storm environment
+  hosts: storm_dev
+  tasks:
+  - name: configure storm servers
+    template: src=templates/storm.yaml dest=/opt/apache-storm-0.9.4/conf/storm.yaml owner=dev group=dev mode=0644
+
+  - name: stop storm supervisor server
+    shell: service storm-supervisor stop
+    tags: stop
+
+  - name: stop storm nimbus server
+    shell: service storm-nimbus stop
+    when: inventory_hostname == '192.168.181.21'
+    tags: stop
+
+  - name: stop storm ui server
+    shell: service storm-ui stop
+    when: inventory_hostname == '192.168.181.21'
+    tags: stop
+
+  - name: start storm ui server
+    shell: service storm-ui start
+    when: inventory_hostname == '192.168.181.21'
+    tags: start
+
+  - name: start storm nimbus server
+    shell: service storm-nimbus start
+    when: inventory_hostname == '192.168.181.21'
+    tags: start
+
+  - name: start storm supervisor server
+    shell: service storm-supervisor start
+    tags: start

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# chkconfig: 2345 72 72
+# description: pgq-dev daemon.
+start() {
+    echo "starting pgqd service ..."
+    su -l postgres -c "python /var/lib/pgsql/mongodb/real_time/storm_pgq.py /var/lib/pgsql/londiste/storm-dev/pgq_kafka.ini -d > ~/logs/pgq-dev.out &"
+    echo "started pgqd"
+}
+stop(){
+    echo "stopping pgq dev consumer ..."
+    ps -ef | grep storm-dev | grep -v grep | grep -v pgqd | awk '{print $2}'|xargs kill
+    echo "stopped pgqd dev consumer"
+}
+restart(){
+   stop
+   start
+}
+
+case "$1" in
+start)
+    start
+    ;;
+status)
+    pid=`ps -ef | grep pgq | grep -v grep | grep -v pgqd | grep 2.6 | awk '{print $2}'`
+    if [ -n "$pid" ]
+        then
+           echo "pgq dev consumer (pid  $pid) is running..."
+        else
+           echo "pgq dev consumer is stopped"
+    fi
+    
+    ;;
+stop)
+    stop
+    ;;
+restart)
+    restart
+    ;;
+*)
+    echo $"Usage $0 {start|status|stop|restart}"
+        exit 2
+esac

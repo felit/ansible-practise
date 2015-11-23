@@ -1,0 +1,11 @@
+---
+- name: test ansible
+  hosts: test
+  gather_facts: false
+  become: true
+  become_user: dev
+  tasks:
+#  - file: src=templates/debug.txt.j2 dest=test.txt
+  - command: pwd
+    register: out
+  - debug: var=out

@@ -1,0 +1,202 @@
+---
+- name: storm development environment
+  hosts: storm_dev
+  # gather_facts: false
+  tasks:
+# dev user and dev group
+# TODO update hostname
+  - name: create group
+    group: name=dev state=present
+    sudo: true
+
+  - name: create user
+  # pip install passlib
+  # python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+    user: name=dev comment='storm developer' group=dev password=$6$rounds=656000$t6VaNrmtmlB3LGmg$c9bhm6MV1xF8LG8gdMt33Okv2UGyDzLARpv3zY3PG5S3y64ucNq/mvUEdj0UkYj2vvUfp.GikoLoHp9r8YUPy. home=/data state=present
+    sudo: true
+
+  - name: dev to sudoer
+    lineinfile: dest=/etc/sudoers regexp=dev.*ALL line="dev\tALL=(ALL)\tNOPASSWD:ALL" backup=yes
+    sudo: true
+    tags: sudoers
+  # - yum: name=git state=present
+    # sudo: true
+
+  - file: path=/data group=dev owner=dev state=directory
+    sudo: true
+
+  - file: path=/opt group=dev owner=dev state=directory
+    sudo: true
+
+  # - yum: name=svn state=present
+    # sudo: true
+
+  - name: check if jdk is installed
+    shell: test -d /opt/jdk1.7.0_45 && echo "exist" || echo ""
+    register: is_jdk_directory_exist
+
+  - name: install jdk
+    unarchive: src=/home/congsl/software/jdk-7u45-linux-x64.tar.gz dest=/opt/
+    sudo: true
+    when: "'${is_jdk_directory_exist.stdout}'!='exist'"
+
+  - name: change java owner
+    file: path=/opt/jdk1.7.0_45 group=dev owner=dev state=directory recurse=yes
+    tags: owner
+    sudo: true
+
+  - name: set JAVA_HOME and PATH for java
+    lineinfile: dest=/data/.bashrc create=yes regexp="export.*JAVA_HOME.*" line="export JAVA_HOME=/opt/jdk1.7.0_45 \nexport PATH=$PATH:$JAVA_HOME/bin" backup=yes
+    tags: path
+    sudo: true
+
+  - name: upload bashrc
+    copy: src=files/shell.bashrc dest=/data/.bashrc group=dev owner=dev
+    sudo: true
+    tags: shell
+
+  - name: upload profile
+    copy: src=files/shell.profile dest=/data/.profile group=dev owner=dev
+    sudo: true
+    tags: shell 
+
+  - name: check if zookeeper is installed
+    shell: test -d /opt/zookeeper-3.4.6 && echo "exist" || echo ""
+    register: is_zookeeper_directory_exist
+    tags: zookeeper
+
+# begin zookeeper
+  - name: install zookeeper
+    unarchive: src=files/zookeeper-3.4.6.tar.gz dest=/opt
+    sudo: true
+    tags: zookeeper
+    when: "'${is_zookeeper_directory_exist.stdout}'!='exist'"
+
+  - name: change zookeeper owner
+    file: path=/opt/zookeeper-3.4.6 group=dev owner=dev
+    tags: zookeeper
+    sudo: true
+
+  - name: configure zookeeper
+    template: src=templates/zoo.cfg dest=/opt/zookeeper-3.4.6/conf/zoo.cfg owner=dev group=dev
+    sudo: true
+    tags: 
+    - zookeeper
+    - zookeeper-config
+
+  - name: install zookeeper service
+    template: src=files/service-zookeeper.sh dest=/etc/init.d/zookeeper owner=dev group=dev mode=0777
+    sudo: true
+    tags: 
+      - zookeeper-service
+
+    # echo 1 > /data/zookeeper/data/myid
+
+  - name: check if storm is installed
+    shell: test -d /opt/apache-storm-0.9.4 && echo "exist" || echo ""
+    register: is_storm_directory_exist
+    tags: storm1
+
+# begin storm
+  - name: install storm
+    unarchive: src=files/apache-storm-0.9.4.tar.gz dest=/opt
+    sudo: true
+    tags: storm
+
+  - name: configure storm servers
+    template: src=templates/storm.yaml dest=/opt/apache-storm-0.9.4/conf/storm.yaml owner=dev group=dev mode=0644
+    sudo: true
+    tags:
+      - storm
+      - storm-config
+
+  - name: change storm owner
+    file: path=/opt/apache-storm-0.9.4 group=dev owner=dev recurse=yes
+    sudo: true
+    tags: 
+       - storm
+       - storm-owner
+
+  - name: install storm nimbus service
+    copy: src=files/service-storm-nimbus.sh dest=/etc/init.d/storm-nimbus owner=dev group=dev mode=0777
+    sudo: true
+    tags: 
+      - storm
+      - storm-service
+
+  - name: install storm supervisor service
+    copy: src=files/service-storm-supervisor.sh dest=/etc/init.d/storm-supervisor owner=dev group=dev mode=0777
+    sudo: true
+    tags: 
+      - storm
+      - storm-service
+
+  - name: install storm ui service
+    copy: src=files/service-storm-ui.sh dest=/etc/init.d/storm-ui owner=dev group=dev mode=0777
+    sudo: true
+    tags: 
+      - storm
+      - storm-service
+
+# begin kafka
+  - name: install kafka
+    unarchive: src=files/kafka_2.11-0.8.2.1.tgz dest=/opt
+    sudo: true
+    tags:
+      - kafka
+
+  - name: configure kafka
+    template: src=templates/kafka.server.properties dest=/opt/kafka_2.11-0.8.2.1/config/server.properties owner=dev group=dev mode=0644
+    sudo: true
+    tags: 
+      - kafka
+      - kafka-config
+
+  - name: configure JAVA_HOME environment variable
+    copy: src=files/kafka-run-class.sh dest=/opt/kafka_2.11-0.8.2.1/bin/kafka-run-class.sh owner=dev group=dev mode=0755
+    sudo: true
+    tags:
+      - kafka-config
+
+  - name: change kafka owner
+    file: path=/opt/kafka_2.11-0.8.2.1 group=dev owner=dev recurse=yes
+    sudo: true
+    tags: 
+      - kafka
+      - kafka-owner
+
+  - name: install kafka service
+    copy: src=files/service-kafka.sh dest=/etc/init.d/kafka owner=dev group=dev mode=0777
+    sudo: true
+    tags: 
+      - kafka
+      - kafka-service
+      - service
+  - name: install zabbix client
+    service: name=zabbix22
+
+# rpm -ivh http://yum.postgresql.org/9.0/redhat/rhel-6-x86_64/pgdg-centos90-9.0-5.noarch.rpm
+# - name: postgresql development
+#   hosts: storm_dev_postgres
+#   tasks:
+#     - name: install
+#     - service: 
+# - name: install zabbix client
+#   hosts:
+#     - storm_dev_postgres
+#     - storm_dev
+#   tasks:
+#     - name: install zabbix client
+#     - yum: name=zabbix-client state=present
+#192.168.181.23 | success | rc=0 >>
+#i-morwdzoi
+
+#192.168.181.21 | success | rc=0 >>
+#i-kwgfjkcm
+
+#192.168.181.22 | success | rc=0 >>
+#i-ejl2smkt
+
+#192.168.181.24 | success | rc=0 >>
+#HOSTNAME=i-96jdxkip
+

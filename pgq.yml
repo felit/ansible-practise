@@ -1,0 +1,31 @@
+---
+- name: install pgq service
+  hosts: storm_dev_postgres
+  # become: true
+  # become_user: postgres
+  tasks:
+    - copy: src={{item}} dest=/etc/init.d/ owner=postgres group=postgres mode=0755
+      with_items:
+        - files/pgqd
+        - files/pgq-test-consumer
+        - files/pgq-test-consumer-yazuopay
+        - files/pgq-staging-consumer
+        - files/pgq-staging-consumer-yazuopay
+        - files/pgq-dev-consumer
+        - files/pgq-dev-consumer-yazuopay
+        - files/storm-dev-consumer
+
+    - service: name={{item}} state=started enabled=yes
+      with_items:
+        - pgqd
+        - pgq-test-consumer
+        - pgq-test-consumer-yazuopay
+        - pgq-staging-consumer
+        - pgq-staging-consumer-yazuopay
+        - pgq-dev-consumer
+        - pgq-dev-consumer-yazuopay
+        - storm-dev-consumer
+      tags: start
+    - name: close pgq services
+      shell: ps -ef | grep pgq | grep -v grep |awk '{print $2}'|xargs kill
+      tags: stop

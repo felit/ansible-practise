@@ -1,0 +1,36 @@
+# - name: update load mongodb files
+  # unarchive: src=files/mongodb-linux-x86_64-rhel62-3.0.6.tgz dest={{ installation_dir }} owner=dev group=dev
+
+- name: ensure mongodb directory exists
+  file: path={{ item }} owner=dev group=dev state=directory
+  with_items:
+    - "{{sharding_dir}}"
+    - "{{config_dir }}"
+
+- name: upload sharding configuration file
+  template: src={{ item }} dest={{ installation_dir }}/mongodb-linux-x86_64-rhel62-3.0.6 owner=dev group=dev
+  with_items:
+    - mongod-sharding.yml
+    - mongod-config.yml
+    - mongod-mongos.yml
+  tags: mongo-config
+
+# - name: configure mongodb config server
+# - name: configure mongodb master
+- name: start mongodb config server
+  shell: bin/mongod --config {{item}}  chdir={{ installation_dir }}/mongodb-linux-x86_64-rhel62-3.0.6
+  with_items:
+    - mongod-config.yml
+    - mongod-sharding.yml
+  tags: start
+- name: start mongos server
+  # shell: {{installation_dir}}/mongodb-linux-x86_64-rhel62-3.0.6/bin/mongos --configdb 192.168.181.21:27018,192.168.181.22:27018,192.168.181.23:27018
+  shell: bin/mongos --config mongod-mongos.yml chdir={{installation_dir}}/mongodb-linux-x86_64-rhel62-3.0.6/
+  tags: 
+    - start
+    - start-mongos
+- name: stop all mongo server
+  shell: ps -ef | grep mongo | grep -v grep |awk '{print $2}'| xargs kill
+  tags: stop
+
+

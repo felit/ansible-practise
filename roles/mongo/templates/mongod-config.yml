@@ -1,0 +1,31 @@
+systemLog:
+  verbosity: 5
+  traceAllExceptions: true
+  destination: file
+  path: {{config_dir}}/mongodb_config.log
+  logAppend: true 
+storage:
+  journal:
+    enabled: false
+  dbPath: {{config_dir}}
+  engine: wiredTiger
+  # wiredTiger: 
+  #   engineConfig:
+  #     statisticsLogDelaySecs: 100
+  #     journalCompressor: zlib
+  #     directoryForIndexes: true
+  directoryPerDB: true
+sharding:
+  clusterRole: configsvr
+processManagement:
+  fork: true
+
+security:
+#enabled
+  authorization: disabled 
+operationProfiling:
+  mode: all
+
+net:
+  bindIp: {{ansible_default_ipv4.address}}
+  port: 27018

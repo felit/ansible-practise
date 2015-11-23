@@ -1,0 +1,8 @@
+---
+- name: clean mongodb installation files
+  hosts: storm_dev
+  become: true
+  become_user: dev
+  tasks:
+  - name: delete mongodb installation files
+    file: path=/optmongodb-linux-x86_64-rhel62-3.0.6 state=absent

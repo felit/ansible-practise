@@ -1,0 +1,30 @@
+# systemLog:
+#   verbosity: 5
+#   traceAllExceptions: true
+#   destination: file
+#   path: "/home/congsl/apps/mongodb/mongo3.log"
+#   logAppend: true 
+storage:
+  journal:
+    enabled: false
+  dbPath: /home/congsl/apps/mongodb/mongo3-wiredTiger
+  engine: wiredTiger
+  wiredTiger:
+    engineConfig:
+      journalCompressor: zlib
+      directoryForIndexes: true
+  directoryPerDB: true
+sharding:
+  clusterRole: shardSrc
+# processManagement:
+  # fork: true
+
+security:
+#enabled
+  authorization: disabled 
+operationProfiling:
+  mode: all
+
+net:
+  bindIp: 127.0.0.1
+  port: 50000

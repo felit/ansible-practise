@@ -1,0 +1,17 @@
+---
+- name: install mongodb
+  hosts: storm_dev
+  become: true
+  become_user: dev
+  roles:
+    - {
+      role: mongo,
+      installation_dir: '/opt',
+      sharding_dir: '/data/mongo-data/sharding',
+      config_dir: '/data/mongo-data/config',
+      port: 27017
+    }
+
+# sh.addShard('192.168.181.21:27017')
+# sh.addShard('192.168.181.22:27017')
+# sh.addShard('192.168.181.23:27017')
